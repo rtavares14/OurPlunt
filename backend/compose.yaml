@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myplunt_dev
+      POSTGRES_USER: myplunt
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
