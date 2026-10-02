@@ -24,7 +24,7 @@ deploy-backend:
   stage: deploy
   image: curlimages/curl
   script:
-    - 'curl -X GET -H "Authorization: Bearer $COOLIFY_BACKEND_TOKEN" "$COOLIFY_BACKEND_WEBHOOK_URL"'
+    - 'curl -X POST -H "Authorization: Bearer $COOLIFY_BACKEND_TOKEN" "$COOLIFY_BACKEND_WEBHOOK_URL"'
   needs: ["build-backend"]
   only:
     refs:
