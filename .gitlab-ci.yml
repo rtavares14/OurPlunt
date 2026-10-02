@@ -24,10 +24,40 @@ deploy-backend:
   stage: deploy
   image: curlimages/curl
   script:
-    - 'curl -X POST -H "Authorization: Bearer $COOLIFY_BACKEND_TOKEN" "$COOLIFY_BACKEND_WEBHOOK_URL"'
+    - 'curl -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_BACKEND_WEBHOOK_URL"'
   needs: ["build-backend"]
   only:
     refs:
       - main
     changes:
       - backend/**/*
+
+build-landing:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/web-landing:latest web_landing/
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/web-landing:latest
+  only:
+    refs:
+      - main
+    changes:
+      - web_landing/**/*
+
+deploy-landing:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - 'curl -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_LANDING_WEBHOOK_URL"'
+  needs: ["build-landing"]
+  only:
+    refs:
+      - main
+    changes:
+      - web_landing/**/*
