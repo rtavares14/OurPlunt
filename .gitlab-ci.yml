@@ -1,6 +1,57 @@
 stages:
+  - test
   - build
   - deploy
+
+test-frontend:
+  stage: test
+  image: node:22
+  script:
+    - cd frontend
+    - npm ci
+    - npm run test:ci
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      changes:
+        - frontend/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - frontend/**/*
+
+lint-frontend:
+  stage: test
+  image: node:22
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      changes:
+        - frontend/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - frontend/**/*
+
+test-backend:
+  stage: test
+  image: eclipse-temurin:25-jdk
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    TESTCONTAINERS_HOST_OVERRIDE: docker
+  script:
+    - cd backend
+    - ./mvnw test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      changes:
+        - backend/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - backend/**/*
 
 build-backend:
   stage: build
